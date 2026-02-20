@@ -14,12 +14,24 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const startServer = async () => {
   await ConnectDb();
-}
- startServer();
-app.use(  
+};
+startServer();
+app.use(
   cors({
-    origin: "http://localhost:5173", 
-    credentials: true,  })
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "https://zippy-treacle-5011d7.netlify.app",
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
 );
 
 app.use(express.json());
