@@ -12,10 +12,8 @@ const { AdminCredentials } = require("./seed/seed");
 const cookieParser = require("cookie-parser");
 
 const app = express();
-const startServer = async () => {
-  await ConnectDb();
-};
-startServer();
+
+// ✅ CORS setup (local + live frontend दोनों allow)
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -34,15 +32,34 @@ app.use(
   })
 );
 
+// middleware
 app.use(express.json());
 app.use(cookieParser());
-// ROUTES
+
+// routes
 app.use("/api/v1", IndexRoute);
-AdminCredentials();
-//image multer handler
+
+// multer error handler
 app.use(multererrorhandler);
 
-//  SERVER START
-app.listen(AppConfig.port, "0.0.0.0", () => {
-  console.log(`Server running on port ${AppConfig.port}`);
-});
+// ✅ SERVER START (सब कुछ यहीं होगा)
+const startServer = async () => {
+  try {
+    // 1. DB connect
+    await ConnectDb();
+    console.log("MongoDB connected");
+
+    // 2. Seed admin (DB connect के बाद)
+    await AdminCredentials();
+
+    // 3. Start server
+    app.listen(AppConfig.port, "0.0.0.0", () => {
+      console.log(`Server running on port ${AppConfig.port}`);
+    });
+  } catch (error) {
+    console.error("Server start failed:", error);
+  }
+};
+
+// start
+startServer();
